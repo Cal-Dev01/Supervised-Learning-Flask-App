@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Animal Classifier</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-center">Upload CSV to Train Model</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="file">CSV File</label>
+                                <input type="file" class="form-control" id="file" name="file" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Upload</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-center">Animal Classifier</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="predict-form" action="/predict" method="post">
+                            <div class="form-group">
+                                <label for="size">Size</label>
+                                <input type="text" class="form-control" id="size" name="size" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="sound">Sound</label>
+                                <input type="text" class="form-control" id="sound" name="sound" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Predict</button>
+                        </form>
+                    </div>
+                    <div class="card-footer text-muted text-center">
+                        <small>Enter the size and sound of the animal to predict its type</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-8 mb-4">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="text-center">Graph</h3>
+                            </div>
+                            <div class="card-body text-center">
+                                <img id="graph" src="#" alt="Graph will be displayed here" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="text-center">Prediction Result</h3>
+                            </div>
+                            <div class="card-body text-center">
+                                <p id="prediction-result">Prediction result will be displayed here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const uploadForm = document.querySelector('#upload-form');
+            uploadForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const formData = new FormData(uploadForm);
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.graph_url) {
+                        document.getElementById('graph').src = data.graph_url;
+                    } else {
+                        alert(data.error || data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            const predictForm = document.querySelector('#predict-form');
+            predictForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const formData = new FormData(predictForm);
+                fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const resultElement = document.getElementById('prediction-result');
+                    if (data.error) {
+                        resultElement.textContent = `Error: ${data.error}`;
+                    } else {
+                        resultElement.textContent = `Prediction: ${data.prediction}`;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    </script>
+</body>
+</html>
